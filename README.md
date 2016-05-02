@@ -1,3 +1,3 @@
 # RogueLike
-rogue like
-This will be a repository for my libtcodpy Roguelike
+This contains all the files necessary from libtcodpy to run the roguelike.
+
