@@ -11,14 +11,23 @@ MAP_HEIGHT = 45
 color_dark_wall = libtcod.Color(0, 0, 100)
 color_dark_ground = libtcod.Color(50, 50, 150)
 
+
 class Tile:
     # a tile of the map and its properties
     def __init__(self, blocked, block_sight = None):
         self.blocked = blocked
 
-        #by default, if a tile is blocked it also blocks sight
+        # by default, if a tile is blocked it also blocks sight
         if block_sight is None: block_sight = blocked
         self.block_sight = block_sight
+
+class Rect:
+    #a rectangle on the map. used to characterize a room.
+    def __init__(self, x, y, w, h):
+        self.x1 = x
+        self.y1 = y
+        self.x2 = x + w
+        self.y2 = y + h
 
 class Object:
     #this is a generic object: PC, NPC, ITEM, ETC
@@ -44,24 +53,54 @@ class Object:
         #erase the character that represents this object
         libtcod.console_put_char(con, self.x, self.y, ' ', libtcod.BKGND_NONE)
 
+
+
+def create_room(room):
+    global map
+    #go through the tiles in the rectangle and make them passable
+    for x in range(room.x1 + 1, room.x2):
+        for y in range(room.y1 + 1, room.y2):
+            map[x][y].blocked = False
+            map[x][y].block_sight = False
+
+def create_h_tunnel(x1, x2, y):
+    global map
+    #horizontal tunnel
+    for x in range(min(x1, x2), max(x1, x2) + 1):
+        map[x][y].blocked = False
+        map[x][y].block_sight = False
+
+def create_v_tunnel(y1, y2, x):
+    global map
+    #vertical tunnel
+    for y in range(min(y1, y2), max(y1, y2) + 1):
+        map[x][y].blocked = False
+        map[x][y].block_sight = False
+
 def make_map():
     global map
 
-    #FILL MAP WITH UNBLOCKED TILES
-    map = [[Tile(False)
+    #FILL MAP WITH BLOCKED TILES
+    map = [[Tile(True)
             for y in range(MAP_HEIGHT)]
                 for x in range(MAP_WIDTH)]
 
-    #place 2 pillats
-    map[30][22].blocked = True
-    map[30][22].block_sight = True
-    map[50][22].blocked = True
-    map[50][22].block_sight = True
+    #create two rooms
+    room1 = Rect(20, 15, 10, 15)
+    room2 = Rect(50, 15, 10 ,15)
+    create_room(room1)
+    create_room(room2)
 
+    #connect them with a tunnel
+    create_h_tunnel(25, 55, 23)
+
+    #place the player inside the first room
+    player.x = 25
+    player.y = 23
 
 def render_all():
-    global color_light_wall
-    global color_light_ground
+    global color_dark_wall, color_light_wall
+    global color_dark_ground, color_light_ground
 
     #go through all tiles, and set their background color
     for y in range(MAP_HEIGHT):
